@@ -19,6 +19,67 @@
     </header>
 
     <div class="gga-hit-location__grid">
+      <section class="gga-hit-location__maneuvers">
+        <h3>Manobras</h3>
+        <div class="gga-hit-location__maneuver-board">
+          {{#each maneuverRows}}
+            <div class="gga-hit-location__maneuver-row">
+              {{#each this}}
+                <div class="gga-hit-location__maneuver-column gga-hit-location__maneuver-column--{{size}}">
+                  {{#each items}}
+                    <button
+                      type="button"
+                      class="gga-hit-location__maneuver"
+                      data-action="set-maneuver"
+                      data-maneuver-id="{{id}}"
+                      title="{{label}}"
+                      aria-label="{{label}}"
+                    >
+                      <img src="{{icon}}" alt="" aria-hidden="true" />
+                      <span>{{label}}</span>
+                    </button>
+                  {{/each}}
+                </div>
+              {{/each}}
+            </div>
+          {{/each}}
+        </div>
+      </section>
+
+      <aside class="gga-hit-location__sidebar">
+        <div class="gga-hit-location__selection">
+          <h3>Selecao atual</h3>
+          {{#if selectedLocation}}
+            <div class="gga-hit-location__selection-card">
+              <strong>{{selectedLocation.label}}</strong>
+              <span>{{selectedLocation.signedMod}}</span>
+            </div>
+          {{else}}
+            <p>Nenhuma area selecionada.</p>
+          {{/if}}
+        </div>
+
+        <div class="gga-hit-location__bucket">
+          <h3>Itens no bucket</h3>
+          {{#if current.items.length}}
+            <ul>
+              {{#each current.items}}
+                <li>
+                  <span>{{desc}}</span>
+                  <strong>{{signedMod}}</strong>
+                </li>
+              {{/each}}
+            </ul>
+          {{else}}
+            <p>Nenhum modificador adicionado ainda.</p>
+          {{/if}}
+        </div>
+
+        <div class="gga-hit-location__actions">
+          <button type="button" data-action="clear-bucket">Limpar bucket</button>
+        </div>
+      </aside>
+
       <section class="gga-hit-location__figure">
         <div
           class="gga-hit-location__bodymap"
@@ -48,69 +109,6 @@
 
         <div class="gga-hit-location__figure-caption">Clique na parte do corpo para adicionar o modificador correspondente.</div>
       </section>
-
-      <aside class="gga-hit-location__sidebar">
-        <div class="gga-hit-location__top-panels">
-          <div class="gga-hit-location__selection">
-            <h3>Selecao atual</h3>
-            {{#if selectedLocation}}
-              <div class="gga-hit-location__selection-card">
-                <strong>{{selectedLocation.label}}</strong>
-                <span>{{selectedLocation.signedMod}}</span>
-              </div>
-            {{else}}
-              <p>Nenhuma area selecionada.</p>
-            {{/if}}
-          </div>
-
-          <div class="gga-hit-location__maneuvers">
-            <h3>Manobras</h3>
-            <div class="gga-hit-location__maneuver-board">
-              {{#each maneuverRows}}
-                <div class="gga-hit-location__maneuver-row">
-                  {{#each this}}
-                    <div class="gga-hit-location__maneuver-column gga-hit-location__maneuver-column--{{size}}">
-                      {{#each items}}
-                        <button
-                          type="button"
-                          class="gga-hit-location__maneuver"
-                          data-action="set-maneuver"
-                          data-maneuver-id="{{id}}"
-                          title="{{label}}"
-                          aria-label="{{label}}"
-                        >
-                          <img src="{{icon}}" alt="" aria-hidden="true" />
-                          <span>{{label}}</span>
-                        </button>
-                      {{/each}}
-                    </div>
-                  {{/each}}
-                </div>
-              {{/each}}
-            </div>
-          </div>
-        </div>
-
-        <div class="gga-hit-location__bucket">
-          <h3>Itens no bucket</h3>
-          {{#if current.items.length}}
-            <ul>
-              {{#each current.items}}
-                <li>
-                  <span>{{desc}}</span>
-                  <strong>{{signedMod}}</strong>
-                </li>
-              {{/each}}
-            </ul>
-          {{else}}
-            <p>Nenhum modificador adicionado ainda.</p>
-          {{/if}}
-        </div>
-
-        <div class="gga-hit-location__actions">
-          <button type="button" data-action="clear-bucket">Limpar bucket</button>
-        </div>
-      </aside>
     </div>
   </div>
 </div>
