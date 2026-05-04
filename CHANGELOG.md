@@ -4,6 +4,12 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+## [1.1.3] - 2026-05-04
+
+### Fixed
+
+- Selected-region highlights now follow the connected body region from the clicked seed point, which prevents adjacent locations from inheriting the wrong color
+
 ## [1.1.2] - 2026-05-04
 
 ### Added

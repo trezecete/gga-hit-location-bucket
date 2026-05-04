@@ -74,6 +74,7 @@ const VITALS_BOUNDS = {
 
 let pickerApp = null;
 let selectedLocationId = null;
+let selectedLocationPoint = null;
 let colorParserCanvas = null;
 let colorParserContext = null;
 
@@ -232,7 +233,26 @@ function locationIdFromCanvasPoint(context, x, y, width, height) {
   return [...scores.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] ?? null;
 }
 
-function createSelectedMaskDataUrl(sourceImage, sourceContext, locationId, fillColor) {
+function findSeedPointForLocation(context, x, y, width, height, locationId) {
+  const radius = 6;
+
+  for (let oy = -radius; oy <= radius; oy++) {
+    for (let ox = -radius; ox <= radius; ox++) {
+      const px = x + ox;
+      const py = y + oy;
+      if (px < 0 || py < 0 || px >= width || py >= height) continue;
+
+      const pixel = context.getImageData(px, py, 1, 1).data;
+      if (locationIdFromPixel(px, py, pixel, width, height) === locationId) {
+        return { x: px, y: py };
+      }
+    }
+  }
+
+  return null;
+}
+
+function createSelectedMaskDataUrl(sourceImage, sourceContext, locationId, fillColor, seedPoint = null) {
   if (!locationId) return "";
 
   const width = sourceImage.naturalWidth;
@@ -240,11 +260,47 @@ function createSelectedMaskDataUrl(sourceImage, sourceContext, locationId, fillC
   const source = sourceContext.getImageData(0, 0, width, height);
   const output = new ImageData(width, height);
   const [fillRed, fillGreen, fillBlue, fillAlpha] = resolveCssColor(fillColor);
+  const visited = new Uint8Array(width * height);
+  const queueX = [];
+  const queueY = [];
+  const startPoint =
+    seedPoint && seedPoint.x >= 0 && seedPoint.y >= 0 && seedPoint.x < width && seedPoint.y < height
+      ? seedPoint
+      : null;
 
-  for (let index = 0; index < source.data.length; index += 4) {
-    const pixelIndex = index / 4;
-    const x = pixelIndex % width;
-    const y = Math.floor(pixelIndex / width);
+  if (!startPoint) {
+    for (let index = 0; index < source.data.length; index += 4) {
+      const pixelIndex = index / 4;
+      const x = pixelIndex % width;
+      const y = Math.floor(pixelIndex / width);
+      const pixel = [
+        source.data[index],
+        source.data[index + 1],
+        source.data[index + 2],
+        source.data[index + 3]
+      ];
+
+      if (locationIdFromPixel(x, y, pixel, width, height) !== locationId) continue;
+      seedPoint = { x, y };
+      break;
+    }
+  }
+
+  const start = seedPoint ?? startPoint;
+  if (!start) return "";
+
+  // Fill only the connected region that belongs to the clicked location.
+  queueX.push(start.x);
+  queueY.push(start.y);
+
+  while (queueX.length) {
+    const x = queueX.pop();
+    const y = queueY.pop();
+    const offset = y * width + x;
+    if (visited[offset]) continue;
+    visited[offset] = 1;
+
+    const index = offset * 4;
     const pixel = [
       source.data[index],
       source.data[index + 1],
@@ -258,6 +314,23 @@ function createSelectedMaskDataUrl(sourceImage, sourceContext, locationId, fillC
     output.data[index + 1] = fillGreen;
     output.data[index + 2] = fillBlue;
     output.data[index + 3] = Math.round(source.data[index + 3] * fillAlpha);
+
+    if (x > 0) {
+      queueX.push(x - 1);
+      queueY.push(y);
+    }
+    if (x + 1 < width) {
+      queueX.push(x + 1);
+      queueY.push(y);
+    }
+    if (y > 0) {
+      queueX.push(x);
+      queueY.push(y - 1);
+    }
+    if (y + 1 < height) {
+      queueX.push(x);
+      queueY.push(y + 1);
+    }
   }
 
   const canvas = document.createElement("canvas");
@@ -330,11 +403,12 @@ function addToBucket(location) {
   return true;
 }
 
-function handleLocationClick(locationId) {
+function handleLocationClick(locationId, seedPoint = null) {
   const location = toLocationView(getLocationById(locationId));
   if (!location) return false;
 
   selectedLocationId = locationId;
+  selectedLocationPoint = seedPoint ? { x: seedPoint.x, y: seedPoint.y } : null;
   const added = addToBucket(location);
   pickerApp?.render(false);
   return added;
@@ -384,15 +458,15 @@ class HitLocationPicker extends Application {
     this._updateSelectedMask();
 
     html.on("click", "[data-action='pick-from-body']", (event) => {
-      const locationId = this._locationIdFromBodyEvent(event);
-      if (locationId) handleLocationClick(locationId);
+      const selection = this._selectionFromBodyEvent(event);
+      if (selection?.locationId) handleLocationClick(selection.locationId, selection.point);
     });
 
     html.on("click", "[data-action='clear-bucket']", () => clearBucket());
     html.on("click", "[data-action='refresh']", () => this.render(false));
   }
 
-  _locationIdFromBodyEvent(event) {
+  _selectionFromBodyEvent(event) {
     const image = this.element.find(".gga-hit-location__bodycolors")[0];
     if (!image?.complete || !image.naturalWidth || !image.naturalHeight) return null;
 
@@ -402,14 +476,15 @@ class HitLocationPicker extends Application {
     if (x < 0 || y < 0 || x >= image.naturalWidth || y >= image.naturalHeight) return null;
 
     const sourceContext = this._ensureHitCanvas(image);
-
-    return locationIdFromCanvasPoint(
+    const locationId = locationIdFromCanvasPoint(
       sourceContext,
       x,
       y,
       image.naturalWidth,
       image.naturalHeight
     );
+
+    return locationId ? { locationId, point: { x, y } } : null;
   }
 
   _ensureHitCanvas(image) {
@@ -440,11 +515,27 @@ class HitLocationPicker extends Application {
       const cacheKey = `${selectedLocationId}:${fillColor}`;
       const sourceContext = this._ensureHitCanvas(sourceImage);
       this._maskCache ??= new Map();
+      const seedPoint =
+        selectedLocationPoint &&
+        findSeedPointForLocation(
+          sourceContext,
+          selectedLocationPoint.x,
+          selectedLocationPoint.y,
+          sourceImage.naturalWidth,
+          sourceImage.naturalHeight,
+          selectedLocationId
+        );
 
       if (!this._maskCache.has(cacheKey)) {
         this._maskCache.set(
           cacheKey,
-          createSelectedMaskDataUrl(sourceImage, sourceContext, selectedLocationId, fillColor)
+          createSelectedMaskDataUrl(
+            sourceImage,
+            sourceContext,
+            selectedLocationId,
+            fillColor,
+            seedPoint ?? selectedLocationPoint
+          )
         );
       }
 
