@@ -37,7 +37,7 @@ game.modules.get("gga-hit-location-bucket").api.openPicker();
 
 ### Manifest URL
 
-`https://raw.githubusercontent.com/trezecete/gga-hit-location-bucket/main/gga-hit-location-bucket/module.json`
+`https://github.com/trezecete/gga-hit-location-bucket/releases/latest/download/module.json`
 
 ### Manual install
 

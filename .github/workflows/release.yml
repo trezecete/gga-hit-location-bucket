@@ -22,8 +22,13 @@ jobs:
           cd gga-hit-location-bucket
           zip -r "../${ZIP_NAME}" . -x "*.DS_Store"
 
+      - name: Prepare manifest asset
+        run: cp gga-hit-location-bucket/module.json ./module.json
+
       - name: Publish GitHub release
         uses: softprops/action-gh-release@v2
         with:
-          files: gga-hit-location-bucket-v*.zip
+          files: |
+            module.json
+            gga-hit-location-bucket-v*.zip
           generate_release_notes: true

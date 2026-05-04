@@ -18,7 +18,7 @@ Foundry VTT module for the GURPS Game Aid bucket. It lets you click a body map a
 
 Use this manifest URL in Foundry:
 
-`https://raw.githubusercontent.com/trezecete/gga-hit-location-bucket/main/gga-hit-location-bucket/module.json`
+`https://github.com/trezecete/gga-hit-location-bucket/releases/latest/download/module.json`
 
 ### From a release
 

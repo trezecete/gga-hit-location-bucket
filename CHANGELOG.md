@@ -7,6 +7,8 @@ All notable changes to this project are documented here.
 ### Added
 
 - Per-location highlight colors exposed as Foundry color pickers in module settings
+- GitHub release packaging now publishes `module.json` alongside the module zip
+- The recommended install URL now points to the latest GitHub release manifest
 
 ## [1.0.0] - 2026-05-04
 
