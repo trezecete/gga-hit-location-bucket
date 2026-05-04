@@ -4,6 +4,19 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+## [2.0.0] - 2026-05-04
+
+### Added
+
+- GURPS maneuver panel with the same maneuver buttons from `manu.html`
+- Built-in maneuver selection sound packaged with the module
+- Public API for applying maneuvers from module integrations
+
+### Changed
+
+- The picker now auto-refreshes every 2 seconds while open instead of using a manual refresh button
+- The default window is wider to fit hit locations, current selection, maneuvers, and bucket state together
+
 ## [1.1.3] - 2026-05-04
 
 ### Fixed

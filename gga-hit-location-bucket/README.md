@@ -1,8 +1,8 @@
 # GGA Hit Location Bucket
 
-This module adds a clickable GURPS hit-location picker for the Foundry VTT GGA bucket.
+This module adds a clickable GURPS hit-location and maneuver picker for the Foundry VTT GGA bucket.
 
-It uses `form.webp` as the visible body and `color.webp` as the technical hit map. Clicking a region adds the matching modifier to `GURPS.ModifierBucket`, and the previous module-added location is removed automatically.
+It uses `form.webp` as the visible body and `color.webp` as the technical hit map. Clicking a region adds the matching modifier to `GURPS.ModifierBucket`, and the previous module-added location is removed automatically. The same window can also assign GGA maneuvers to selected tokens that are already in combat.
 
 ## Features
 
@@ -12,6 +12,8 @@ It uses `form.webp` as the visible body and `color.webp` as the technical hit ma
 - Per-location highlight colors configurable in Foundry settings
 - `Vitals` integrated as part of the body image
 - Automatic replacement of the previous location in the bucket
+- GURPS maneuver buttons with selection sound
+- Automatic bucket refresh while the window is open
 - Clear bucket action
 - Foundry scene control button and keyboard shortcut
 

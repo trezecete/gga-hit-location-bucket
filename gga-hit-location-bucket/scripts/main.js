@@ -1,4 +1,6 @@
 const MODULE_ID = "gga-hit-location-bucket";
+const AUTO_REFRESH_INTERVAL_MS = 2000;
+const MANEUVER_SOUND_PATH = `modules/${MODULE_ID}/assets/sound-select.wav`;
 
 const DEFAULT_LOCATIONS = [
   { id: "eye", label: "Eye", mod: -9, order: 10 },
@@ -20,6 +22,98 @@ const DEFAULT_LOCATIONS = [
 ];
 
 const MODULE_MODIFIER_FLAG = "[GGA Hit Location]";
+
+const MANEUVER_ROWS = [
+  [
+    {
+      size: "wide",
+      items: [{ id: "attack", label: "Attack", icon: "systems/gurps/icons/maneuvers/man-attack.png" }]
+    },
+    {
+      size: "normal",
+      items: [
+        { id: "aoa_determined", label: "AOA Determined", icon: "systems/gurps/icons/maneuvers/man-aoa-determined.png" },
+        { id: "aod_dodge", label: "AOD Dodge", icon: "systems/gurps/icons/maneuvers/man-def-dodge.png" }
+      ]
+    },
+    {
+      size: "normal",
+      items: [
+        { id: "aoa_double", label: "AOA Double", icon: "systems/gurps/icons/maneuvers/man-aoa-double.png" },
+        { id: "aod_block", label: "AOD Block", icon: "systems/gurps/icons/maneuvers/man-def-block.png" }
+      ]
+    },
+    {
+      size: "normal",
+      items: [
+        { id: "aoa_strong", label: "AOA Strong", icon: "systems/gurps/icons/maneuvers/man-aoa-strong.png" },
+        { id: "aod_parry", label: "AOD Parry", icon: "systems/gurps/icons/maneuvers/man-def-parry.png" }
+      ]
+    }
+  ],
+  [
+    {
+      size: "wide",
+      items: [{ id: "move_and_attack", label: "Move & Attack", icon: "systems/gurps/icons/maneuvers/man-move-attack.png" }]
+    },
+    {
+      size: "normal",
+      items: [
+        { id: "aim", label: "Aim", icon: "systems/gurps/icons/maneuvers/man-aim.png" },
+        { id: "ready", label: "Ready", icon: "systems/gurps/icons/maneuvers/man-ready.png" }
+      ]
+    },
+    {
+      size: "normal",
+      items: [
+        { id: "evaluate", label: "Evaluate", icon: "systems/gurps/icons/maneuvers/man-evaluate.png" },
+        { id: "concentrate", label: "Concentrate", icon: "systems/gurps/icons/maneuvers/man-concentrate.png" }
+      ]
+    },
+    {
+      size: "normal",
+      items: [
+        { id: "aod_double", label: "AOD Double", icon: "systems/gurps/icons/maneuvers/man-def-double.png" },
+        { id: "wait", label: "Wait", icon: "systems/gurps/icons/maneuvers/man-wait.png" }
+      ]
+    }
+  ],
+  [
+    {
+      size: "wide",
+      items: [{ id: "move", label: "Move", icon: "systems/gurps/icons/maneuvers/man-move.png" }]
+    },
+    {
+      size: "normal",
+      items: [
+        { id: "do_nothing", label: "Do Nothing", icon: "systems/gurps/icons/maneuvers/man-nothing.png" },
+        { id: "change_posture", label: "Change Posture", icon: "systems/gurps/icons/maneuvers/man-change-posture.png" }
+      ]
+    }
+  ],
+  [
+    {
+      size: "normal",
+      items: [{ id: "do_nothing", label: "Do Nothing", icon: "systems/gurps/icons/maneuvers/man-nothing.png" }]
+    },
+    {
+      size: "normal",
+      items: [{ id: "do_nothing", label: "Do Nothing", icon: "systems/gurps/icons/maneuvers/man-nothing.png" }]
+    },
+    {
+      size: "normal",
+      items: [{ id: "do_nothing", label: "Do Nothing", icon: "systems/gurps/icons/maneuvers/man-nothing.png" }]
+    },
+    {
+      size: "normal",
+      items: [{ id: "do_nothing", label: "Do Nothing", icon: "systems/gurps/icons/maneuvers/man-nothing.png" }]
+    },
+    {
+      size: "normal",
+      items: [{ id: "do_nothing", label: "Do Nothing", icon: "systems/gurps/icons/maneuvers/man-nothing.png" }]
+    }
+  ]
+];
 
 const COLOR_REGIONS = [
   { id: "eye", rgb: [255, 180, 0] },
@@ -427,13 +521,42 @@ function clearBucket() {
   return true;
 }
 
+function playManeuverSound() {
+  const audio = new Audio(MANEUVER_SOUND_PATH);
+  audio.play().catch(() => {});
+}
+
+function setActorManeuver(maneuverId) {
+  const controlledTokens = canvas?.tokens?.controlled ?? [];
+  if (!controlledTokens.length) {
+    ui.notifications.error("No token selected! Select a token in combat to declare a maneuver");
+    return false;
+  }
+
+  let changed = false;
+  for (const token of controlledTokens) {
+    if (!token.inCombat || typeof token.setManeuver !== "function") continue;
+    token.setManeuver(maneuverId);
+    changed = true;
+  }
+
+  if (!changed) {
+    ui.notifications.error("Select at least one token <b>in combat</b> to declare a maneuver");
+    return false;
+  }
+
+  playManeuverSound();
+  Hooks.callAll(`${MODULE_ID}.setManeuver`, maneuverId, controlledTokens);
+  return true;
+}
+
 class HitLocationPicker extends Application {
   static get defaultOptions() {
     return foundry.utils.mergeObject(super.defaultOptions, {
       id: `${MODULE_ID}-app`,
       classes: [MODULE_ID],
       template: `modules/${MODULE_ID}/templates/hit-location-picker.hbs`,
-      width: 900,
+      width: 1100,
       height: 700,
       resizable: true,
       title: "GGA Hit Location Bucket"
@@ -446,6 +569,7 @@ class HitLocationPicker extends Application {
 
     return {
       current,
+      maneuverRows: MANEUVER_ROWS,
       selectedLocation,
       selectedHighlightColor: selectedLocation ? getHighlightColor(selectedLocation.id) : null,
       bucketReady: Boolean(getGurpsBucket()),
@@ -463,7 +587,20 @@ class HitLocationPicker extends Application {
     });
 
     html.on("click", "[data-action='clear-bucket']", () => clearBucket());
-    html.on("click", "[data-action='refresh']", () => this.render(false));
+    html.on("click", "[data-action='set-maneuver']", (event) => {
+      const maneuverId = event.currentTarget.dataset.maneuverId;
+      if (maneuverId) setActorManeuver(maneuverId);
+    });
+
+    this._startAutoRefresh();
+  }
+
+  _startAutoRefresh() {
+    if (this._autoRefreshInterval) return;
+    this._autoRefreshInterval = window.setInterval(() => {
+      if (!this.rendered) return;
+      this.render(false);
+    }, AUTO_REFRESH_INTERVAL_MS);
   }
 
   _selectionFromBodyEvent(event) {
@@ -550,6 +687,10 @@ class HitLocationPicker extends Application {
   }
 
   close(options = {}) {
+    if (this._autoRefreshInterval) {
+      window.clearInterval(this._autoRefreshInterval);
+      this._autoRefreshInterval = null;
+    }
     pickerApp = null;
     return super.close(options);
   }
@@ -629,6 +770,8 @@ Hooks.once("ready", () => {
       clearBucket,
       getBucketState,
       handleLocationClick,
+      maneuverRows: MANEUVER_ROWS,
+      setActorManeuver,
       HitLocationPicker
     };
   }
@@ -640,5 +783,6 @@ export {
   clearBucket,
   getBucketState,
   handleLocationClick,
-  openPicker
+  openPicker,
+  setActorManeuver
 };
