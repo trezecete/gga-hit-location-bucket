@@ -8,6 +8,7 @@ It uses `form.webp` as the visible body and `color.webp` as the technical hit ma
 
 - Clickable body regions with pixel-accurate detection
 - Highlighted selected region
+- `Eyes` integrated as part of the body image
 - Per-location highlight colors configurable in Foundry settings
 - `Vitals` integrated as part of the body image
 - Automatic replacement of the previous location in the bucket

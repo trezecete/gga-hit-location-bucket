@@ -22,6 +22,7 @@ const DEFAULT_LOCATIONS = [
 const MODULE_MODIFIER_FLAG = "[GGA Hit Location]";
 
 const COLOR_REGIONS = [
+  { id: "eye", rgb: [255, 180, 0] },
   { id: "vitals", rgb: [122, 1, 226] },
   { id: "skull", rgb: [235, 51, 255] },
   { id: "face", rgb: [246, 255, 0] },

@@ -7,6 +7,7 @@ Foundry VTT module for the GURPS Game Aid bucket. It lets you click a body map a
 - Clickable body map based on `form.webp`
 - Pixel-based hit detection from `color.webp`
 - Selected region is highlighted from the technical color mask
+- `Eyes` included as a clickable facial region
 - Per-location highlight colors are configurable with Foundry color pickers
 - `Vitals` is part of the body map
 - Previous module-added location is removed before the new one is added

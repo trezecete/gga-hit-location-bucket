@@ -4,11 +4,14 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+## [1.1.2] - 2026-05-04
+
 ### Added
 
 - Per-location highlight colors exposed as Foundry color pickers in module settings
 - GitHub release packaging now publishes `module.json` alongside the module zip
 - The recommended install URL now points to the latest GitHub release manifest
+- `Eyes` now has its own clickable region in the pixel hit map
 
 ## [1.0.0] - 2026-05-04
 
