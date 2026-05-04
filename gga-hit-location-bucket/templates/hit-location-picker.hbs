@@ -18,35 +18,24 @@
       </div>
     </header>
 
-    <div class="gga-hit-location__grid">
-      <section class="gga-hit-location__maneuvers">
-        <h3>Manobras</h3>
-        <div class="gga-hit-location__maneuver-board">
-          {{#each maneuverRows}}
-            <div class="gga-hit-location__maneuver-row">
-              {{#each this}}
-                <div class="gga-hit-location__maneuver-column gga-hit-location__maneuver-column--{{size}}">
-                  {{#each items}}
-                    <button
-                      type="button"
-                      class="gga-hit-location__maneuver"
-                      data-action="set-maneuver"
-                      data-maneuver-id="{{id}}"
-                      title="{{label}}"
-                      aria-label="{{label}}"
-                    >
-                      <img src="{{icon}}" alt="" aria-hidden="true" />
-                      <span>{{label}}</span>
-                    </button>
-                  {{/each}}
-                </div>
-              {{/each}}
-            </div>
+    <div class="gga-hit-location__grid {{panelClass}}">
+      <aside class="gga-hit-location__bucket-panel">
+        <div class="gga-hit-location__panel-toolbar">
+          {{#each expansionControls}}
+            <button
+              type="button"
+              class="gga-hit-location__panel-toggle {{#if active}}is-active{{/if}}"
+              data-action="toggle-panel"
+              data-panel-id="{{id}}"
+              title="{{action}}"
+              aria-label="{{action}}"
+              aria-pressed="{{active}}"
+            >
+              <i class="{{icon}}" aria-hidden="true"></i>
+            </button>
           {{/each}}
         </div>
-      </section>
 
-      <aside class="gga-hit-location__sidebar">
         <div class="gga-hit-location__selection">
           <h3>Selecao atual</h3>
           {{#if selectedLocation}}
@@ -80,35 +69,66 @@
         </div>
       </aside>
 
-      <section class="gga-hit-location__figure">
-        <div
-          class="gga-hit-location__bodymap"
-          aria-label="Mapa corporal clicavel"
-          data-action="pick-from-body"
-          {{#if selectedHighlightColor}}style="--hl-selected-glow: {{selectedHighlightColor}};"{{/if}}
-          {{#if selectedLocation}}data-selected-location="{{selectedLocation.id}}"{{/if}}
-        >
-          <img
-            class="gga-hit-location__bodybase"
-            src="modules/gga-hit-location-bucket/assets/form.webp"
-            alt=""
-            aria-hidden="true"
-          />
-          <img
-            class="gga-hit-location__bodycolors"
-            src="modules/gga-hit-location-bucket/assets/color.webp"
-            alt=""
-            aria-hidden="true"
-          />
-          <img
-            class="gga-hit-location__selected-mask"
-            alt=""
-            aria-hidden="true"
-          />
-        </div>
+      {{#if panels.maneuvers}}
+        <section class="gga-hit-location__maneuvers">
+          <h3>Manobras</h3>
+          <div class="gga-hit-location__maneuver-board">
+            {{#each maneuverRows}}
+              <div class="gga-hit-location__maneuver-row">
+                {{#each this}}
+                  <div class="gga-hit-location__maneuver-column gga-hit-location__maneuver-column--{{size}}">
+                    {{#each items}}
+                      <button
+                        type="button"
+                        class="gga-hit-location__maneuver"
+                        data-action="set-maneuver"
+                        data-maneuver-id="{{id}}"
+                        title="{{label}}"
+                        aria-label="{{label}}"
+                      >
+                        <img src="{{icon}}" alt="" aria-hidden="true" />
+                        <span>{{label}}</span>
+                      </button>
+                    {{/each}}
+                  </div>
+                {{/each}}
+              </div>
+            {{/each}}
+          </div>
+        </section>
+      {{/if}}
 
-        <div class="gga-hit-location__figure-caption">Clique na parte do corpo para adicionar o modificador correspondente.</div>
-      </section>
+      {{#if panels.hitLocation}}
+        <section class="gga-hit-location__figure">
+          <div
+            class="gga-hit-location__bodymap"
+            aria-label="Mapa corporal clicavel"
+            data-action="pick-from-body"
+            {{#if selectedHighlightColor}}style="--hl-selected-glow: {{selectedHighlightColor}};"{{/if}}
+            {{#if selectedLocation}}data-selected-location="{{selectedLocation.id}}"{{/if}}
+          >
+            <img
+              class="gga-hit-location__bodybase"
+              src="modules/gga-hit-location-bucket/assets/form.webp"
+              alt=""
+              aria-hidden="true"
+            />
+            <img
+              class="gga-hit-location__bodycolors"
+              src="modules/gga-hit-location-bucket/assets/color.webp"
+              alt=""
+              aria-hidden="true"
+            />
+            <img
+              class="gga-hit-location__selected-mask"
+              alt=""
+              aria-hidden="true"
+            />
+          </div>
+
+          <div class="gga-hit-location__figure-caption">Clique na parte do corpo para adicionar o modificador correspondente.</div>
+        </section>
+      {{/if}}
     </div>
   </div>
 </div>

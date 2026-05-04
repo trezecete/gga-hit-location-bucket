@@ -4,6 +4,14 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+## [2.0.2] - 2026-05-04
+
+### Changed
+
+- The picker now opens with only the bucket panel visible
+- Maneuvers and Hit Location are expandable panels that appear to the right of the bucket
+- The dialog width now adjusts as expandable panels are opened or minimized
+
 ## [2.0.1] - 2026-05-04
 
 ### Changed

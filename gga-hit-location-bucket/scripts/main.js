@@ -1,6 +1,11 @@
 const MODULE_ID = "gga-hit-location-bucket";
 const AUTO_REFRESH_INTERVAL_MS = 2000;
 const MANEUVER_SOUND_PATH = `modules/${MODULE_ID}/assets/sound-select.wav`;
+const PANEL_WIDTHS = {
+  bucket: 390,
+  oneExpanded: 760,
+  twoExpanded: 1120
+};
 
 const DEFAULT_LOCATIONS = [
   { id: "eye", label: "Eye", mod: -9, order: 10 },
@@ -22,6 +27,19 @@ const DEFAULT_LOCATIONS = [
 ];
 
 const MODULE_MODIFIER_FLAG = "[GGA Hit Location]";
+
+const EXPANDABLE_PANELS = [
+  {
+    id: "maneuvers",
+    title: "Manobras",
+    icon: "fas fa-running"
+  },
+  {
+    id: "hitLocation",
+    title: "Hit Location",
+    icon: "fas fa-crosshairs"
+  }
+];
 
 const MANEUVER_ROWS = [
   [
@@ -556,20 +574,36 @@ class HitLocationPicker extends Application {
       id: `${MODULE_ID}-app`,
       classes: [MODULE_ID],
       template: `modules/${MODULE_ID}/templates/hit-location-picker.hbs`,
-      width: 1100,
+      width: PANEL_WIDTHS.bucket,
       height: 700,
       resizable: true,
       title: "GGA Hit Location Bucket"
     });
   }
 
+  constructor(options = {}) {
+    super(options);
+    this._openPanels = {
+      maneuvers: false,
+      hitLocation: false
+    };
+  }
+
   getData() {
     const current = getBucketState();
     const selectedLocation = toLocationView(getLocationById(selectedLocationId));
+    const openPanelCount = Object.values(this._openPanels).filter(Boolean).length;
 
     return {
       current,
+      expansionControls: EXPANDABLE_PANELS.map((panel) => ({
+        ...panel,
+        active: Boolean(this._openPanels[panel.id]),
+        action: this._openPanels[panel.id] ? `Minimizar ${panel.title}` : `Maximizar ${panel.title}`
+      })),
       maneuverRows: MANEUVER_ROWS,
+      panelClass: `gga-hit-location__grid--${openPanelCount + 1}`,
+      panels: this._openPanels,
       selectedLocation,
       selectedHighlightColor: selectedLocation ? getHighlightColor(selectedLocation.id) : null,
       bucketReady: Boolean(getGurpsBucket()),
@@ -591,8 +625,31 @@ class HitLocationPicker extends Application {
       const maneuverId = event.currentTarget.dataset.maneuverId;
       if (maneuverId) setActorManeuver(maneuverId);
     });
+    html.on("click", "[data-action='toggle-panel']", (event) => {
+      const panelId = event.currentTarget.dataset.panelId;
+      if (panelId) this._togglePanel(panelId);
+    });
 
     this._startAutoRefresh();
+  }
+
+  _togglePanel(panelId) {
+    if (!(panelId in this._openPanels)) return;
+    this._openPanels[panelId] = !this._openPanels[panelId];
+    this.render(false);
+    this._resizeForOpenPanels();
+  }
+
+  _resizeForOpenPanels() {
+    const openPanelCount = Object.values(this._openPanels).filter(Boolean).length;
+    const width =
+      openPanelCount === 0
+        ? PANEL_WIDTHS.bucket
+        : openPanelCount === 1
+          ? PANEL_WIDTHS.oneExpanded
+          : PANEL_WIDTHS.twoExpanded;
+
+    this.setPosition({ width, height: this.position.height ?? this.options.height });
   }
 
   _startAutoRefresh() {

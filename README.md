@@ -12,6 +12,7 @@ Foundry VTT module for the GURPS Game Aid bucket. It lets you click a body map t
 - `Vitals` is part of the body map
 - Previous module-added location is removed before the new one is added
 - GURPS maneuver panel with built-in maneuver selection sound
+- Expandable Bucket-first interface for Manobras and Hit Location panels
 - Bucket state refreshes automatically while the picker is open
 - Works with Foundry VTT 12+ and GURPS Game Aid
 

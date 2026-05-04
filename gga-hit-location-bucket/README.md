@@ -13,6 +13,7 @@ It uses `form.webp` as the visible body and `color.webp` as the technical hit ma
 - `Vitals` integrated as part of the body image
 - Automatic replacement of the previous location in the bucket
 - GURPS maneuver buttons with selection sound
+- Bucket-first interface with expandable Maneuvers and Hit Location panels
 - Automatic bucket refresh while the window is open
 - Clear bucket action
 - Foundry scene control button and keyboard shortcut
