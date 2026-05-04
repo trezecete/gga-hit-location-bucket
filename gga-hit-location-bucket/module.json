@@ -1,0 +1,30 @@
+{
+  "id": "gga-hit-location-bucket",
+  "title": "GGA Hit Location Bucket",
+  "description": "Clickable hit-location picker that adds GURPS modifiers directly to the GGA modifier bucket.",
+  "version": "1.0.0",
+  "url": "https://github.com/trezecete/gga-hit-location-bucket",
+  "manifest": "https://raw.githubusercontent.com/trezecete/gga-hit-location-bucket/main/gga-hit-location-bucket/module.json",
+  "download": "https://github.com/trezecete/gga-hit-location-bucket/releases/download/v1.0.0/gga-hit-location-bucket-v1.0.0.zip",
+  "readme": "https://github.com/trezecete/gga-hit-location-bucket/blob/main/README.md",
+  "changelog": "https://github.com/trezecete/gga-hit-location-bucket/blob/main/CHANGELOG.md",
+  "bugs": "https://github.com/trezecete/gga-hit-location-bucket/issues",
+  "type": "module",
+  "authors": [
+    {
+      "name": "trezecete",
+      "url": "https://github.com/trezecete"
+    }
+  ],
+  "compatibility": {
+    "minimum": "12",
+    "verified": "13"
+  },
+  "esmodules": [
+    "scripts/main.js"
+  ],
+  "styles": [
+    "styles/module.css"
+  ],
+  "license": "MIT"
+}

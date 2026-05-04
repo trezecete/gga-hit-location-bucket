@@ -1,0 +1,87 @@
+<div class="gga-hit-location">
+  <div class="gga-hit-location__shell">
+    <header class="gga-hit-location__header">
+      <div>
+        <p class="gga-hit-location__eyebrow">GURPS GGA helper</p>
+        <h2>Hit Location Bucket</h2>
+        <p>Clique em uma parte do corpo para selecionar a região e enviar o modificador direto ao bucket.</p>
+        {{#unless bucketReady}}
+          <p class="gga-hit-location__warning">O GURPS Modifier Bucket não foi encontrado nesta sessão.</p>
+        {{/unless}}
+        <p class="gga-hit-location__hint">A seleção anterior é substituída automaticamente.</p>
+      </div>
+
+      <div class="gga-hit-location__summary">
+        <div class="gga-hit-location__summary-label">Bucket atual</div>
+        <div class="gga-hit-location__summary-total">{{current.total}}</div>
+        <div class="gga-hit-location__summary-count">{{current.count}} modificadores</div>
+      </div>
+    </header>
+
+    <div class="gga-hit-location__grid">
+      <section class="gga-hit-location__figure">
+        <div
+          class="gga-hit-location__bodymap"
+          aria-label="Mapa corporal clicável"
+          data-action="pick-from-body"
+          {{#if selectedLocation}}data-selected-location="{{selectedLocation.id}}"{{/if}}
+        >
+          <img
+            class="gga-hit-location__bodybase"
+            src="modules/gga-hit-location-bucket/assets/form.webp"
+            alt=""
+            aria-hidden="true"
+          />
+          <img
+            class="gga-hit-location__bodycolors"
+            src="modules/gga-hit-location-bucket/assets/color.webp"
+            alt=""
+            aria-hidden="true"
+          />
+          <img
+            class="gga-hit-location__selected-mask"
+            alt=""
+            aria-hidden="true"
+          />
+        </div>
+
+        <div class="gga-hit-location__figure-caption">Clique na parte do corpo para adicionar o modificador correspondente.</div>
+      </section>
+
+      <aside class="gga-hit-location__sidebar">
+        <div class="gga-hit-location__selection">
+          <h3>Seleção atual</h3>
+          {{#if selectedLocation}}
+            <div class="gga-hit-location__selection-card">
+              <strong>{{selectedLocation.label}}</strong>
+              <span>{{selectedLocation.signedMod}}</span>
+            </div>
+          {{else}}
+            <p>Nenhuma área selecionada.</p>
+          {{/if}}
+        </div>
+
+        <div class="gga-hit-location__bucket">
+          <h3>Itens no bucket</h3>
+          {{#if current.items.length}}
+            <ul>
+              {{#each current.items}}
+                <li>
+                  <span>{{desc}}</span>
+                  <strong>{{signedMod}}</strong>
+                </li>
+              {{/each}}
+            </ul>
+          {{else}}
+            <p>Nenhum modificador adicionado ainda.</p>
+          {{/if}}
+        </div>
+
+        <div class="gga-hit-location__actions">
+          <button type="button" data-action="refresh">Atualizar</button>
+          <button type="button" data-action="clear-bucket">Limpar bucket</button>
+        </div>
+      </aside>
+    </div>
+  </div>
+</div>
