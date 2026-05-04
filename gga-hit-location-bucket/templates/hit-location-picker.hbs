@@ -4,11 +4,11 @@
       <div>
         <p class="gga-hit-location__eyebrow">GURPS GGA helper</p>
         <h2>Hit Location Bucket</h2>
-        <p>Clique em uma parte do corpo para selecionar a região e enviar o modificador direto ao bucket.</p>
+        <p>Clique em uma parte do corpo para selecionar a regiao e enviar o modificador direto ao bucket.</p>
         {{#unless bucketReady}}
-          <p class="gga-hit-location__warning">O GURPS Modifier Bucket não foi encontrado nesta sessão.</p>
+          <p class="gga-hit-location__warning">O GURPS Modifier Bucket nao foi encontrado nesta sessao.</p>
         {{/unless}}
-        <p class="gga-hit-location__hint">A seleção anterior é substituída automaticamente.</p>
+        <p class="gga-hit-location__hint">A selecao anterior e substituida automaticamente.</p>
       </div>
 
       <div class="gga-hit-location__summary">
@@ -22,8 +22,9 @@
       <section class="gga-hit-location__figure">
         <div
           class="gga-hit-location__bodymap"
-          aria-label="Mapa corporal clicável"
+          aria-label="Mapa corporal clicavel"
           data-action="pick-from-body"
+          {{#if selectedHighlightColor}}style="--hl-selected-glow: {{selectedHighlightColor}};"{{/if}}
           {{#if selectedLocation}}data-selected-location="{{selectedLocation.id}}"{{/if}}
         >
           <img
@@ -50,14 +51,14 @@
 
       <aside class="gga-hit-location__sidebar">
         <div class="gga-hit-location__selection">
-          <h3>Seleção atual</h3>
+          <h3>Selecao atual</h3>
           {{#if selectedLocation}}
             <div class="gga-hit-location__selection-card">
               <strong>{{selectedLocation.label}}</strong>
               <span>{{selectedLocation.signedMod}}</span>
             </div>
           {{else}}
-            <p>Nenhuma área selecionada.</p>
+            <p>Nenhuma area selecionada.</p>
           {{/if}}
         </div>
 

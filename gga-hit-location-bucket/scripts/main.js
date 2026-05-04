@@ -34,6 +34,25 @@ const COLOR_REGIONS = [
   { id: "foot", rgb: [17, 124, 115] }
 ];
 
+const DEFAULT_LOCATION_HIGHLIGHT_COLORS = {
+  eye: "#eb33ff",
+  skull: "#eb33ff",
+  face: "#f6ff00",
+  neck: "#ff0100",
+  head: "#eb33ff",
+  torso: "#e4c5a6",
+  vitals: "#7a01e2",
+  groin: "#ab0001",
+  "arm-l": "#00ff77",
+  "arm-r": "#00ff77",
+  "hand-l": "#01fff7",
+  "hand-r": "#01fff7",
+  "leg-l": "#0066fe",
+  "leg-r": "#0066fe",
+  "foot-l": "#117c73",
+  "foot-r": "#117c73"
+};
+
 const REFERENCE_IMAGE_SIZE = { width: 640, height: 1280 };
 
 const LEG_SPLIT_POINTS = [
@@ -54,6 +73,8 @@ const VITALS_BOUNDS = {
 
 let pickerApp = null;
 let selectedLocationId = null;
+let colorParserCanvas = null;
+let colorParserContext = null;
 
 function signed(mod) {
   return mod > 0 ? `+${mod}` : `${mod}`;
@@ -102,6 +123,29 @@ function toLocationView(location) {
 
 function distanceToColor(rgb, target) {
   return Math.hypot(rgb[0] - target[0], rgb[1] - target[1], rgb[2] - target[2]);
+}
+
+function getDefaultHighlightColor(locationId) {
+  return DEFAULT_LOCATION_HIGHLIGHT_COLORS[locationId] ?? "#7a1f1f";
+}
+
+function getHighlightColor(locationId) {
+  return game.settings.get(MODULE_ID, `highlightColor-${locationId}`) ?? getDefaultHighlightColor(locationId);
+}
+
+function resolveCssColor(color) {
+  colorParserCanvas ??= document.createElement("canvas");
+  colorParserCanvas.width = 1;
+  colorParserCanvas.height = 1;
+  colorParserContext ??= colorParserCanvas.getContext("2d");
+  if (!colorParserContext) return [122, 31, 31, 1];
+
+  colorParserContext.clearRect(0, 0, 1, 1);
+  colorParserContext.fillStyle = "#000000";
+  colorParserContext.fillStyle = color;
+  colorParserContext.fillRect(0, 0, 1, 1);
+  const [red, green, blue, alpha] = colorParserContext.getImageData(0, 0, 1, 1).data;
+  return [red, green, blue, alpha / 255];
 }
 
 function sideFromX(x, width) {
@@ -187,13 +231,14 @@ function locationIdFromCanvasPoint(context, x, y, width, height) {
   return [...scores.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] ?? null;
 }
 
-function createSelectedMaskDataUrl(sourceImage, sourceContext, locationId) {
+function createSelectedMaskDataUrl(sourceImage, sourceContext, locationId, fillColor) {
   if (!locationId) return "";
 
   const width = sourceImage.naturalWidth;
   const height = sourceImage.naturalHeight;
   const source = sourceContext.getImageData(0, 0, width, height);
   const output = new ImageData(width, height);
+  const [fillRed, fillGreen, fillBlue, fillAlpha] = resolveCssColor(fillColor);
 
   for (let index = 0; index < source.data.length; index += 4) {
     const pixelIndex = index / 4;
@@ -208,10 +253,10 @@ function createSelectedMaskDataUrl(sourceImage, sourceContext, locationId) {
 
     if (locationIdFromPixel(x, y, pixel, width, height) !== locationId) continue;
 
-    output.data[index] = source.data[index];
-    output.data[index + 1] = source.data[index + 1];
-    output.data[index + 2] = source.data[index + 2];
-    output.data[index + 3] = source.data[index + 3];
+    output.data[index] = fillRed;
+    output.data[index + 1] = fillGreen;
+    output.data[index + 2] = fillBlue;
+    output.data[index + 3] = Math.round(source.data[index + 3] * fillAlpha);
   }
 
   const canvas = document.createElement("canvas");
@@ -327,6 +372,7 @@ class HitLocationPicker extends Application {
     return {
       current,
       selectedLocation,
+      selectedHighlightColor: selectedLocation ? getHighlightColor(selectedLocation.id) : null,
       bucketReady: Boolean(getGurpsBucket()),
       autoCloseAfterAdd: game.settings.get(MODULE_ID, "autoCloseAfterAdd")
     };
@@ -389,17 +435,19 @@ class HitLocationPicker extends Application {
         return;
       }
 
+      const fillColor = getHighlightColor(selectedLocationId);
+      const cacheKey = `${selectedLocationId}:${fillColor}`;
       const sourceContext = this._ensureHitCanvas(sourceImage);
       this._maskCache ??= new Map();
 
-      if (!this._maskCache.has(selectedLocationId)) {
+      if (!this._maskCache.has(cacheKey)) {
         this._maskCache.set(
-          selectedLocationId,
-          createSelectedMaskDataUrl(sourceImage, sourceContext, selectedLocationId)
+          cacheKey,
+          createSelectedMaskDataUrl(sourceImage, sourceContext, selectedLocationId, fillColor)
         );
       }
 
-      maskImage.src = this._maskCache.get(selectedLocationId);
+      maskImage.src = this._maskCache.get(cacheKey);
     };
 
     if (sourceImage.complete && sourceImage.naturalWidth) {
@@ -427,6 +475,21 @@ function openPicker() {
 }
 
 Hooks.once("init", () => {
+  for (const location of DEFAULT_LOCATIONS) {
+    game.settings.register(MODULE_ID, `highlightColor-${location.id}`, {
+      name: `${location.label} highlight color`,
+      hint: `Color used when ${location.label.toLowerCase()} is selected in the hit-location picker.`,
+      scope: "client",
+      config: true,
+      type: new foundry.data.fields.ColorField(),
+      default: getDefaultHighlightColor(location.id),
+      onChange: () => {
+        if (!pickerApp) return;
+        pickerApp.render(false);
+      }
+    });
+  }
+
   game.settings.register(MODULE_ID, "autoCloseAfterAdd", {
     name: "Auto close after adding",
     hint: "Close the hit-location window after a modifier is added to the bucket.",
@@ -464,6 +527,18 @@ Hooks.once("init", () => {
 Hooks.once("ready", () => {
   if (game.system.id !== "gurps") {
     console.warn(`[${MODULE_ID}] This module is intended for the GURPS system.`);
+  }
+
+  const moduleEntry = game.modules.get(MODULE_ID);
+  if (moduleEntry) {
+    moduleEntry.api = {
+      openPicker,
+      addToBucket,
+      clearBucket,
+      getBucketState,
+      handleLocationClick,
+      HitLocationPicker
+    };
   }
 });
 

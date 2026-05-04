@@ -2,6 +2,12 @@
 
 All notable changes to this project are documented here.
 
+## [Unreleased]
+
+### Added
+
+- Per-location highlight colors exposed as Foundry color pickers in module settings
+
 ## [1.0.0] - 2026-05-04
 
 ### Added
@@ -11,4 +17,3 @@ All notable changes to this project are documented here.
 - Selected-region highlight derived from the technical color mask
 - Automatic replacement of the previously added module modifier
 - Foundry scene control button and keyboard shortcut
-

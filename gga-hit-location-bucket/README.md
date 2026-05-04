@@ -8,10 +8,25 @@ It uses `form.webp` as the visible body and `color.webp` as the technical hit ma
 
 - Clickable body regions with pixel-accurate detection
 - Highlighted selected region
+- Per-location highlight colors configurable in Foundry settings
 - `Vitals` integrated as part of the body image
 - Automatic replacement of the previous location in the bucket
 - Clear bucket action
 - Foundry scene control button and keyboard shortcut
+
+## Settings
+
+The module adds one color picker setting per hit location under Foundry's `Configure Settings` menu.
+
+Each selected region uses its saved color when the highlight mask is drawn, so you can customize the look of the picker without changing the hit detection map.
+
+## Macro
+
+You can open the interface from a macro with:
+
+```js
+game.modules.get("gga-hit-location-bucket").api.openPicker();
+```
 
 ## Compatibility
 
